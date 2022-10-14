@@ -1,12 +1,12 @@
-import {TripEntity} from '../types';
+import {NewTripEntity, TripEntity} from '../types';
 import {ValidationError} from '../middleware/errors';
+import {pool} from '../db/db';
+import {FieldPacket} from 'mysql2';
 
-interface newTripEntity extends Omit<TripEntity, 'id'> {
-    id?: string;
-}
+type TripRecordResults = [TripEntity[], FieldPacket[]]
 
 export class TripRecord implements TripEntity {
-    public id: number;
+    public id: string;
     public name: string;
     public description: string;
     public price: number;
@@ -14,7 +14,7 @@ export class TripRecord implements TripEntity {
     public lat: number;
     public lon: number;
 
-    constructor(obj: newTripEntity) {
+    constructor(obj: NewTripEntity) {
         if (!obj.name || obj.name.length > 100) {
             throw new ValidationError('The name field is required');
         }
@@ -31,12 +31,21 @@ export class TripRecord implements TripEntity {
             throw new ValidationError('Wrong parameters of longitude and latitude');
         }
 
+        this.id = obj.id;
         this.name = obj.name;
         this.description = obj.description;
         this.price = obj.price;
-        this.url = obj.name;
+        this.url = obj.url;
         this.lat = obj.lat;
         this.lon = obj.lon;
+    }
 
+    static async getOne(id: string): Promise<TripRecord> | null {
+        const [results] = await pool.execute('SELECT * FROM `trips` WHERE id = :id', {
+            id,
+        }) as TripRecordResults;
+
+        return results.length === 0 ? null : new TripRecord(results[0])
     }
 }
+

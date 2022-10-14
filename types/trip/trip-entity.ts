@@ -1,5 +1,9 @@
+export interface NewTripEntity extends Omit<TripEntity, 'id'> {
+    id?: string;
+}
+
 export interface TripEntity {
-    id: number;
+    id: string;
     name: string;
     description: string;
     price: number;
