@@ -1,4 +1,4 @@
-import {NewTripEntity, TripEntity} from '../types';
+import {BasicTripEntity, NewTripEntity, TripEntity} from '../types';
 import {ValidationError} from '../middleware/errors';
 import {pool} from '../db/db';
 import {FieldPacket} from 'mysql2';
@@ -40,12 +40,27 @@ export class TripRecord implements TripEntity {
         this.lon = obj.lon;
     }
 
+    '';
+
     static async getOne(id: string): Promise<TripRecord> | null {
-        const [results] = await pool.execute('SELECT * FROM `trips` WHERE id = :id', {
+        const [results] = await pool.execute('SELECT * FROM `trips` WHERE `id` = :id', {
             id,
         }) as TripRecordResults;
 
-        return results.length === 0 ? null : new TripRecord(results[0])
+        return results.length === 0 ? null : new TripRecord(results[0]);
     }
-}
 
+    static async getAll(name: string): Promise<BasicTripEntity[]> {
+        const [results] = await pool.execute('SELECT * FROM `trips` WHERE `name` LIKE :search', {
+            search: `%${name}%`
+        }) as TripRecordResults;
+
+        return results.map(result => {
+            const {id, lat, lon} = result;
+            return {
+                id, lat, lon
+            };
+        });
+    }
+
+}
