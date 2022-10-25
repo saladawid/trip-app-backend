@@ -2,6 +2,7 @@ import {BasicTripEntity, NewTripEntity, TripEntity} from '../types';
 import {ValidationError} from '../middleware/errors';
 import {pool} from '../db/db';
 import {FieldPacket} from 'mysql2';
+import {v4 as uuid} from 'uuid';
 
 type TripRecordResults = [TripEntity[], FieldPacket[]]
 
@@ -40,8 +41,6 @@ export class TripRecord implements TripEntity {
         this.lon = obj.lon;
     }
 
-    '';
-
     static async getOne(id: string): Promise<TripRecord> | null {
         const [results] = await pool.execute('SELECT * FROM `trips` WHERE `id` = :id', {
             id,
@@ -62,5 +61,22 @@ export class TripRecord implements TripEntity {
             };
         });
     }
+
+    async insert(): Promise<void> {
+        if (!this.id) {
+            this.id = uuid();
+        } else {
+            throw new Error('Cannot insert something that is already inserted!');
+        }
+
+        await pool.execute('INSERT INTO `trips`(`id`, `name`, `description`, `price`, `url`, `lat`, `lon`) VALUES(:id, :name, :description, :price, :url, :lat, :lon)', this);
+    }
+
+    static async deleteOne(id: string): Promise<void> {
+        await pool.execute('DELETE FROM `trips` WHERE `id` = :id', {
+            id,
+        });
+    }
+
 
 }
