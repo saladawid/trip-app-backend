@@ -7,6 +7,9 @@ export interface TripEntity extends BasicTripEntity {
     description: string;
     price: number;
     url: string;
+    arrival: string;
+    departure: string;
+    id_user: string
 }
 
 export interface BasicTripEntity {

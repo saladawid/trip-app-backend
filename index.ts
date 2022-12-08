@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
 import 'express-async-errors';
-import {handleError, ValidationError} from './middleware/errors';
+import {handleError} from './middleware/errors';
 import rateLimit from 'express-rate-limit';
 import {tripRouter} from './routers/trip.router';
+import {userRouter} from "./routers/user.router";
+import {protect} from "./middleware/auth";
 
 const app = express();
 
@@ -16,7 +18,8 @@ app.use(rateLimit({
     max: 100,
 }));
 
-app.use('/api/trip', tripRouter);
+app.use('/api/trip', protect, tripRouter);
+app.use('/api/user', userRouter);
 
 
 app.use(handleError);
